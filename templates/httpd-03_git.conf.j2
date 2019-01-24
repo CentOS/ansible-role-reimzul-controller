@@ -1,0 +1,9 @@
+ SetEnv GIT_PROJECT_ROOT /var/www/git/
+ SetEnv GIT_HTTP_EXPORT_ALL
+ ScriptAlias /git/ /usr/libexec/git-core/git-http-backend/
+ 
+ <Location /git/>
+   IndexOptions FancyIndexing VersionSort NameWidth=* HTMLTable Charset=UTF-8
+    Require all granted
+ </Location>
+

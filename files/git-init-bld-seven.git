@@ -1,0 +1,16 @@
+#!/bin/bash
+pushd $(mktemp -d)
+git clone file:///var/www/git/bld-seven.git/
+cd bld-seven
+mkdir mock
+cat > mock/site-defaults.cfg << EOF
+config_opts['plugin_conf']['ccache_enable'] = False
+config_opts['plugin_conf']['yum_cache_enable'] = False
+config_opts['plugin_conf']['root_cache_enable'] = False
+EOF
+git add mock/*
+git config user.name "Reimzul deployer"
+git config user.email "bugs@centos.org"
+git commit -a -m "initial repo" && git push origin master
+popd
+

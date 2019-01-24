@@ -1,0 +1,62 @@
+- name: Ensuring git is installed
+  yum:
+    name: git
+    state: installed
+
+- name: Creating directory where to host git repositories
+  file:
+    path: /var/www/git
+    state: directory
+    owner: reimzul
+    group: admins
+    mode: 02775
+
+- name: Allowing git over http for git clone/pull
+  template:
+    src: httpd-03_git.conf.j2
+    dest: /etc/httpd/conf.d/httpd-03_git.conf
+  notify: restart_httpd  
+
+- name: Distributing git-init scripts
+  copy:
+    src: "git-init-{{ item }}"
+    dest: "/root/git-init-{{ item }}"
+    owner: root
+    group: root
+    mode: 0750
+  with_items: "{{ reimzul_git_repos }}"
+ 
+- name: Creating directories for git repositories
+  file:
+    path: "/var/www/git/{{ item }}"
+    state: directory
+    owner: reimzul
+    group: admins
+    mode: 02775
+  with_items: "{{ reimzul_git_repos }}"
+
+- name: Initializing bare git repos if needed
+  command: git init --bare
+  args:
+    chdir: "/var/www//git/{{ item }}"
+    creates: "/var/www/git/{{ item }}/HEAD"
+  with_items: "{{ reimzul_git_repos }}"
+  become_user: reimzul
+  register: git_repos_init
+
+- name: Creating directories for git repositories
+  file:
+    path: "/var/www/git/{{ item }}"
+    state: directory
+    owner: reimzul
+    group: admins
+    recurse: True
+    mode: 02775
+  with_items: "{{ reimzul_git_repos }}"
+
+- name: Init local git repositories if needed
+  command: "/root/git-init-{{ item.item }}"
+  with_items: " {{ git_repos_init.results }}"
+  when: item is changed
+  loop_control:
+    label: '{{ item.item }}'

@@ -1,0 +1,172 @@
+- name: Ensuring some required pkgs are installed for reimzul
+  yum:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - beanstalkd
+    - python-beanstalkc
+    - PyYAML
+    - mongodb-server
+    - mongodb
+    - python-pymongo
+    - python-paho-mqtt
+
+- name: Ensuring beanstalkd will write on disk for persistence
+  template:
+    src: sysconfig-beanstalkd.j2
+    dest: /etc/sysconfig/beanstalkd
+
+- name: Ensuring some services are enabled and started
+  service:
+    name: "{{ item }}"
+    enabled: True
+    state: started
+  with_items:
+    - mongod
+    - beanstalkd
+
+- name: Ensuring stunnel pkg is installed
+  yum:
+    name: stunnel
+    state: latest
+
+- name: Configuring stunnel
+  template:
+    src: "templates/{{ item }}.j2"
+    dest: "/etc/stunnel/{{ item }}"
+    owner: root
+    group: root
+    mode: 0600
+  with_items:
+    - stunnel.conf
+    - reimzul-client.psk
+    - reimzul-clients.psk
+  notify: restart_stunnel
+
+- name: Adding stunnel to systemd
+  copy:
+    src: stunnel.service
+    dest: /etc/systemd/system/stunnel.service
+    owner: root
+  register: stunnel_systemd
+
+- name: Reloading systemd if needed
+  shell: /usr/bin/systemctl daemon-reload
+  when: stunnel_systemd is changed
+
+- name: Ensuring stunnel is enabled and started
+  service: 
+    name: stunnel 
+    state: started 
+    enabled: yes
+
+- name: Configuring iptables rules
+  include_role:
+    name: iptables
+    tasks_from: custom-policy
+  vars:
+    iptables_policy_name: stunnel-beanstalkd
+    iptables_protocol: tcp
+    iptables_port: "13100"
+    iptables_source: "0.0.0.0/0"
+  tags:
+    - iptables
+
+- name: Configuring iptables rules
+  include_role:
+    name: iptables
+    tasks_from: custom-policy
+  vars:
+    iptables_policy_name: stunnel-rsyncd
+    iptables_protocol: tcp
+    iptables_port: "11873"
+    iptables_source: "0.0.0.0/0"
+  tags:
+    - iptables
+
+- name: Configuring iptables rules
+  include_role:
+    name: iptables
+    tasks_from: custom-policy
+  vars:
+    iptables_policy_name: stunnel-httpd
+    iptables_protocol: tcp
+    iptables_port: "11080"
+    iptables_source: "0.0.0.0/0"
+  tags:
+    - iptables
+
+- name: Ensuring reimzul user exists
+  user:
+    name: reimzul
+    state: present
+    comment: "Reimzul Build System"
+    shell: /bin/bash
+
+- name: Ensuring incoming directory exists
+  file:
+    path: "{{ reimzul_incoming_dir }}"
+    state: directory
+    owner: reimzul
+    group: admins
+    setype: public_content_rw_t
+
+- name: Configuring incoming rsyncd
+  template:
+    src: templates/rsyncd-reimzul.conf.j2
+    dest: /etc/rsyncd.d/01_rsyncd-reimzul.conf
+  notify: rebuild_rsyncd
+
+- name: Ensuring rsyncd selinux boolean is turned to allow incoming
+  seboolean:
+    name: rsync_anon_write 
+    state: yes
+    persistent: yes
+
+- name: Configuring httpd (through stunnel) 
+  template:
+    src: httpd-02_reimzul.conf.j2
+    dest: /etc/httpd/conf.d/02_reimzul.conf
+  notify: restart_httpd  
+
+- include_tasks: git.yml
+  when: reimzul_controller_git
+  tags:
+    - git
+
+- name: Ensuring reimzul can log to file
+  file:
+    path: /var/log/reimzul
+    state: directory
+    owner: reimzul
+    group: reimzul
+
+- name: Reimzul has a directory config
+  file:
+    path: /etc/reimzul
+    state: directory
+
+- name: Reimzul config for notifier
+  template:
+    src: reimzul.ini.j2
+    dest: /etc/reimzul/reimzul.ini
+
+- name: Adding reimzul-notifier to systemd
+  copy:
+    src: reimzul-notifier.service
+    dest: /etc/systemd/system/reimzul-notifier.service
+    owner: root
+  register: reimzul_systemd
+
+- name: Reloading systemd if needed
+  shell: /usr/bin/systemctl daemon-reload
+  when: reimzul_systemd is changed
+    
+- name: Ensuring reimzul-notifier is enabled and started
+  service: 
+    name: reimzul-notifier.service
+    state: started 
+    enabled: yes
+    
+
+

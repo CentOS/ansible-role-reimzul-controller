@@ -1,0 +1,12 @@
+---
+dependencies:
+  - role: iptables 
+  - role: rsyncd
+    vars:
+      - rsyncd_public: False
+      - rsyncd_uid: "{{ reimzul_rsyncd_uid }}"
+      - rsyncd_gid: "{{ reimzul_rsyncd_gid }}"
+  - role: httpd 
+    vars:
+      - httpd_public: False
+

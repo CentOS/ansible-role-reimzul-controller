@@ -1,0 +1,8 @@
+#!/bin/bash
+pushd /srv/reimzul
+git clone https://github.com/CentOS/reimzul.git code
+cd code
+git remote add local file:///var/www/git/reimzul.git
+git push local master
+popd
+

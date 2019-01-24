@@ -1,0 +1,26 @@
+<VirtualHost *:80>
+ ServerAdmin webmaster@centos.org
+ ServerName {{ inventory_hostname }}
+ DocumentRoot /var/www/html
+ CustomLog logs/reimzul_access.log combined
+ ErrorLog logs/reimzul_error.log
+ IndexIgnore .??* *~ *# HEADER* README* RCS CVS *,v *,t FOOTER.html
+
+ Alias /reimzul-incoming/ "{{ reimzul_incoming_dir }}"
+
+#Directory Permissions
+ <Directory "{{ reimzul_incoming_dir }}">
+  AllowOverride Indexes
+  Options Indexes FollowSymLinks 
+  <IfVersion < 2.4>
+    Order allow,deny
+    Allow from all
+  </IfVersion>
+  <IfVersion >= 2.4>
+    IndexOptions FancyIndexing VersionSort NameWidth=* HTMLTable Charset=UTF-8
+    Require all granted
+  </IfVersion>
+ </Directory>
+
+</VirtualHost>
+

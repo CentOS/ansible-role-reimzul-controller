@@ -1,0 +1,38 @@
+# Default variables for reimzul controller
+#
+
+# Is reimzul controller also hosting some git repositores (like for reimzul code and mock config files)
+# That means that those git repositories will be available through httpd and stunnel only for 'git clone/pull) while git push will happen through ssh
+reimzul_controller_git: True
+
+reimzul_git_repos:
+  - reimzul.git
+  - bld-seven.git
+
+# Where the incoming SRPMs would land and also be exposed to workers/builders
+reimzul_incoming_dir: /srv/reimzul/incoming/
+
+# Let's enforce reimzul user for rsyncd
+reimzul_rsyncd_uid: reimzul
+reimzul_rsyncd_gid: reimzul
+
+# Default controller PSK stunnel key, don't forget to change that at the host level
+# Generate it with `openssl rand -base64 30` 
+beanstalkd_key: uc+FoUhldhA6JqD0Wdj0L644KDwjHerbkPW8aosx
+
+# Default notifications settings for reimzul notifier
+reimzul_mail_notifications: False
+reimzul_mail_from: buildsys@mydomain.com
+reimzul_mail_to:
+  - arch: x86_64
+    rcpts:
+      - me@mydomain.com
+  - arch: ppc64le
+    rcpts:
+      - me@mydomain.com
+      - you@yourdomain.com
+
+reimzul_mqtt_notifications: False
+reimzul_mqtt_broker: mqtt.yourdomain.com
+reimzul_mqtt_user: myuser
+reimzul_mqtt_pass: mypass

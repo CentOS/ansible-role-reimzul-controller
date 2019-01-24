@@ -1,0 +1,25 @@
+[bstore]
+base_url = http://localhost:11081/bstore/repo/
+
+[logs]
+logfile = /var/log/reimzul/reimzul.log
+
+[mail]
+notifications = {{ reimzul_mail_notifications }}
+mail_from = {{ reimzul_mail_from }}
+
+[mail_rcpts]
+{% for item in reimzul_mail_to %}
+{{ item.arch }} = {% for rcpt in item.rcpts -%} {{ rcpt }}{%- if not loop.last -%},{% endif %} {% endfor %}
+
+{% endfor %}
+
+[mqtt]
+notifications = {{ reimzul_mqtt_notifications }}
+host = {{ reimzul_mqtt_broker }}
+port = 8883
+username = {{ reimzul_mqtt_user }}
+password = {{ reimzul_mqtt_pass }}
+ca_cert = /etc/pki/tls/certs/ca-bundle.crt
+topic = /reimzul/builds
+

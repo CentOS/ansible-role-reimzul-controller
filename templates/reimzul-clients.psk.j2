@@ -1,0 +1,9 @@
+{% for host in groups['reimzul-controller'] %}
+{{ host }}:{{ hostvars[host].beanstalkd_key }}
+{% endfor %}
+{% for host in groups['reimzul-bstore'] %}
+{{ host }}:{{ hostvars[host].beanstalkd_key }}
+{% endfor %}
+{% for host in groups['reimzul-builders'] %}
+{{ host }}:{{ hostvars[host].beanstalkd_key }}
+{% endfor %}
