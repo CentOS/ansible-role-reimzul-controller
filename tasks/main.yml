@@ -8,6 +8,7 @@
     - PyYAML
     - mongodb-server
     - mongodb
+    - mongo-tools
     - python-pymongo
     - python-paho-mqtt
 
@@ -168,5 +169,10 @@
     state: started 
     enabled: yes
     
+# Backup
+- name: Ensuring backup user and jobs
+  include_role:
+    name: centos-backup
+    tasks_from: client
 
 
