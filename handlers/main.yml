@@ -2,3 +2,11 @@
   service: 
     name: stunnel 
     state: restarted
+
+- name: restart_reimzul
+  service:
+    name: "{{ item }}"
+    state: restarted
+  with_items:
+    - reimzul-notifier
+    - reimzul-mqtt-sub

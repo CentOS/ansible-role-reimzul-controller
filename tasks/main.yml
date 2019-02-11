@@ -11,6 +11,9 @@
     - mongo-tools
     - python-pymongo
     - python-paho-mqtt
+    - rpm-build
+    - scl-utils
+    - scl-utils-build
 
 - name: Ensuring beanstalkd will write on disk for persistence
   template:
@@ -109,7 +112,8 @@
     path: "{{ reimzul_incoming_dir }}"
     state: directory
     owner: reimzul
-    group: admins
+    group: reimzul
+    mode: 02775
     setype: public_content_rw_t
 
 - name: Configuring incoming rsyncd
@@ -145,30 +149,48 @@
 - name: Reimzul has a directory config
   file:
     path: /etc/reimzul
+    owner: reimzul
+    mode: 0750
     state: directory
 
-- name: Reimzul config for notifier
+- name: Reimzul config
   template:
     src: reimzul.ini.j2
     dest: /etc/reimzul/reimzul.ini
+  notify:
+    - restart_reimzul
+
+- include_tasks: mqtt.yml
+  when: reimzul_mqtt_notifications
+
+- include_role:
+    name: postfix
+    tasks_from: relay_to
+  when: reimzul_mail_notifications
 
 - name: Adding reimzul-notifier to systemd
   copy:
-    src: reimzul-notifier.service
-    dest: /etc/systemd/system/reimzul-notifier.service
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
     owner: root
   register: reimzul_systemd
+  with_items:
+    - reimzul-notifier.service
+    - reimzul-mqtt-sub.service
 
 - name: Reloading systemd if needed
   shell: /usr/bin/systemctl daemon-reload
   when: reimzul_systemd is changed
     
-- name: Ensuring reimzul-notifier is enabled and started
+- name: Ensuring reimzul services are enabled and started
   service: 
-    name: reimzul-notifier.service
+    name: "{{ item }}"
     state: started 
     enabled: yes
-    
+  with_items:
+    - reimzul-notifier.service
+    - reimzul-mqtt-sub.service
+
 # Backup
 - name: Ensuring backup user and jobs
   include_role:

@@ -1,6 +1,9 @@
 [bstore]
 base_url = http://localhost:11081/bstore/repo/
 
+[scm]
+git_url = {{ reimzul_git_url }}
+
 [logs]
 logfile = /var/log/reimzul/reimzul.log
 
@@ -18,8 +21,9 @@ mail_from = {{ reimzul_mail_from }}
 notifications = {{ reimzul_mqtt_notifications }}
 host = {{ reimzul_mqtt_broker }}
 port = 8883
-username = {{ reimzul_mqtt_user }}
-password = {{ reimzul_mqtt_pass }}
-ca_cert = /etc/pki/tls/certs/ca-bundle.crt
-topic = /reimzul/builds
+ca_cert = /etc/reimzul/{{ reimzul_mqtt_tls_ca_cert }}
+tls_cert = /etc/reimzul/{{ reimzul_mqtt_tls_cert }}
+tls_key = /etc/reimzul/{{ reimzul_mqtt_tls_key }}
+tls_insecure = False
+topic = {{ reimzul_mqtt_topic }}
 

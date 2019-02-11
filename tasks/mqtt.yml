@@ -1,0 +1,8 @@
+- name: Distributing TLS certs for MQTT pub/sub
+  copy:
+    src: "{{ pkistore }}/{{ item }}"
+    dest: "/etc/reimzul/{{ item }}"
+  with_items:
+    - "{{ reimzul_mqtt_tls_ca_cert }}"
+    - "{{ reimzul_mqtt_tls_cert }}"
+    - "{{ reimzul_mqtt_tls_key }}"
