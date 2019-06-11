@@ -56,7 +56,7 @@
 
 - name: Init local git repositories if needed
   command: "/root/git-init-{{ item.item }}"
-  with_items: " {{ git_repos_init.results }}"
+  with_items: "{{ git_repos_init.results }}"
   when: item is changed
   loop_control:
     label: '{{ item.item }}'
