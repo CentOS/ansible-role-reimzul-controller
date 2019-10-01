@@ -46,6 +46,9 @@
     - reimzul-client.psk
     - reimzul-clients.psk
   notify: restart_stunnel
+  tags:
+    - clients
+    - stunnel
 
 - name: Adding stunnel to systemd
   copy:
