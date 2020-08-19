@@ -15,6 +15,7 @@
   template:
     src: httpd-03_git.conf.j2
     dest: /etc/httpd/conf.d/httpd-03_git.conf
+    mode: 0644
   notify: restart_httpd  
 
 - name: Distributing git-init scripts

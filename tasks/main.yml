@@ -19,6 +19,7 @@
   template:
     src: sysconfig-beanstalkd.j2
     dest: /etc/sysconfig/beanstalkd
+    mode: 0644
 
 - name: Ensuring some services are enabled and started
   service:
@@ -135,6 +136,7 @@
   template:
     src: httpd-02_reimzul.conf.j2
     dest: /etc/httpd/conf.d/02_reimzul.conf
+    mode: 0644
   notify: restart_httpd  
 
 - include_tasks: git.yml
@@ -160,6 +162,7 @@
   template:
     src: reimzul.ini.j2
     dest: /etc/reimzul/reimzul.ini
+    mode: 0644
   notify:
     - restart_reimzul
 
